@@ -1,0 +1,30 @@
+name: Kick Watcher
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
+      - run: |
+          node -e "
+          const puppeteer = require('puppeteer-extra');
+          const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+          puppeteer.use(StealthPlugin());
+          (async () => {
+            const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
+            const page = await browser.newPage();
+            await page.goto('https://kick.com/combatry', { waitUntil: 'networkidle2' });
+            console.log('CombatRy izleniyor...');
+            await new Promise(r => setTimeout(r, 1000 * 60 * 230));
+            await browser.close();
+          })();
+          "
